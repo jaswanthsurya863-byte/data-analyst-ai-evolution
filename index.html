@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Data Analyst Is Not Dying — It's Evolving</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:ital,wght@0,400;1,400&family=Lora:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #060a0f;
+    --surface: #0d1520;
+    --accent1: #00e5ff;
+    --accent2: #ff6b35;
+    --accent3: #7fff6e;
+    --text: #e8edf5;
+    --muted: #6b7fa0;
+    --border: rgba(0,229,255,0.12);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lora', Georgia, serif;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.5;
+  }
+
+  /* ── GRID LINES ── */
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  section, header, footer { position: relative; z-index: 1; }
+
+  /* ── HERO ── */
+  header {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 60px 24px;
+    overflow: hidden;
+  }
+
+  .hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    animation: pulse 6s ease-in-out infinite;
+  }
+  .orb1 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(0,229,255,0.15), transparent 70%); top: -100px; left: -100px; }
+  .orb2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,107,53,0.12), transparent 70%); bottom: -80px; right: -80px; animation-delay: 3s; }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--accent1);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.8rem, 8vw, 7rem);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    max-width: 900px;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.4s forwards;
+  }
+
+  h1 .strike {
+    text-decoration: line-through;
+    color: var(--muted);
+    text-decoration-color: var(--accent2);
+    text-decoration-thickness: 4px;
+  }
+
+  h1 .evolving {
+    color: var(--accent1);
+    display: inline-block;
+    animation: glow 3s ease-in-out infinite;
+  }
+
+  @keyframes glow {
+    0%, 100% { text-shadow: 0 0 20px rgba(0,229,255,0.4); }
+    50% { text-shadow: 0 0 60px rgba(0,229,255,0.9), 0 0 100px rgba(0,229,255,0.4); }
+  }
+
+  .hero-sub {
+    margin-top: 32px;
+    font-size: 1.1rem;
+    color: var(--muted);
+    font-style: italic;
+    max-width: 560px;
+    line-height: 1.8;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.7s forwards;
+  }
+
+  .scroll-cue {
+    margin-top: 60px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    color: var(--muted); letter-spacing: 0.2em;
+    opacity: 0; animation: fadeUp 1s 1.2s forwards;
+  }
+  .scroll-line {
+    width: 1px; height: 60px;
+    background: linear-gradient(to bottom, var(--accent1), transparent);
+    animation: scrollLine 2s ease-in-out infinite;
+  }
+  @keyframes scrollLine {
+    0% { transform: scaleY(0); transform-origin: top; }
+    50% { transform: scaleY(1); transform-origin: top; }
+    51% { transform: scaleY(1); transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── STAT BAND ── */
+  .stat-band {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px;
+    overflow: hidden;
+  }
+
+  .stats-row {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 0;
+    max-width: 1000px; margin: 0 auto;
+  }
+
+  .stat-item {
+    flex: 1 1 200px; padding: 24px 32px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .stat-item:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    color: var(--accent1);
+    line-height: 1;
+    display: block;
+  }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.15em;
+    color: var(--muted); text-transform: uppercase;
+    margin-top: 8px; display: block;
+  }
+
+  /* ── SECTIONS ── */
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+  section { padding: 100px 24px; }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.25em;
+    color: var(--accent2); text-transform: uppercase;
+    margin-bottom: 16px; display: block;
+  }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 800; line-height: 1.1;
+    margin-bottom: 32px;
+  }
+
+  /* ── TRANSFORMATION TIMELINE ── */
+  .timeline { max-width: 800px; margin: 0 auto; position: relative; }
+
+  .timeline::before {
+    content: ''; position: absolute; left: 28px; top: 0; bottom: 0;
+    width: 1px; background: linear-gradient(to bottom, var(--accent1), var(--accent2), var(--accent3));
+  }
+
+  .tl-item {
+    display: flex; gap: 32px; margin-bottom: 56px;
+    opacity: 0; transform: translateX(-20px);
+    transition: opacity 0.6s, transform 0.6s;
+  }
+  .tl-item.visible { opacity: 1; transform: translateX(0); }
+
+  .tl-dot {
+    width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    font-weight: bold; border: 1px solid;
+    background: var(--bg); position: relative; z-index: 1;
+  }
+
+  .tl-content { padding-top: 8px; }
+  .tl-year {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 8px; opacity: 0.6;
+  }
+  .tl-title {
+    font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .tl-desc { color: var(--muted); line-height: 1.8; font-size: 0.95rem; }
+
+  /* ── ROLE CARDS ── */
+  .cards-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2px; max-width: 1000px; margin: 48px auto 0;
+  }
+
+  .role-card {
+    background: var(--surface); padding: 36px 32px;
+    border: 1px solid var(--border); position: relative;
+    overflow: hidden; cursor: default;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .role-card:hover { transform: translateY(-4px); border-color: var(--accent1); }
+  .role-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .card-c1::before { background: var(--accent1); }
+  .card-c2::before { background: var(--accent2); }
+  .card-c3::before { background: var(--accent3); }
+
+  .card-icon {
+    font-size: 2rem; margin-bottom: 20px; display: block;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif; font-size: 1.15rem; font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .card-body { color: var(--muted); line-height: 1.8; font-size: 0.9rem; }
+  .card-tag {
+    display: inline-block; margin-top: 20px;
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 2px;
+  }
+  .tag-cyan { background: rgba(0,229,255,0.1); color: var(--accent1); }
+  .tag-orange { background: rgba(255,107,53,0.1); color: var(--accent2); }
+  .tag-green { background: rgba(127,255,110,0.1); color: var(--accent3); }
+
+  /* ── QUOTE ── */
+  .quote-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    padding: 80px 24px;
+    text-align: center;
+  }
+  blockquote {
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    font-style: italic; line-height: 1.6;
+    max-width: 800px; margin: 0 auto;
+    color: var(--text);
+  }
+  blockquote span { color: var(--accent1); font-style: normal; font-weight: bold; }
+  cite {
+    display: block; margin-top: 24px;
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase;
+  }
+
+  /* ── SKILLS SHIFT ── */
+  .skills-wrap { max-width: 800px; margin: 48px auto 0; }
+
+  .skill-row {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    align-items: center; gap: 16px;
+    margin-bottom: 20px;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 0.5s, transform 0.5s;
+  }
+  .skill-row.visible { opacity: 1; transform: translateY(0); }
+
+  .skill-old { text-align: right; }
+  .skill-new { text-align: left; }
+
+  .skill-tag {
+    font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    padding: 8px 16px; border-radius: 3px;
+    display: inline-block; letter-spacing: 0.05em;
+  }
+  .old-tag { background: rgba(107, 127, 160, 0.15); color: var(--muted); }
+  .new-tag { background: rgba(0,229,255,0.12); color: var(--accent1); border: 1px solid rgba(0,229,255,0.3); }
+  .arrow-mid {
+    font-size: 1.2rem; color: var(--accent2); font-family: 'DM Mono', monospace;
+  }
+
+  /* ── SOURCES ── */
+  .sources {
+    background: #050810;
+    padding: 60px 24px;
+    border-top: 1px solid var(--border);
+  }
+  .sources h3 {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    letter-spacing: 0.25em; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 24px;
+  }
+  .source-list {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    max-width: 1000px; margin: 0 auto;
+  }
+  .source-pill {
+    font-family: 'DM Mono', monospace; font-size: 0.62rem;
+    padding: 6px 14px; border: 1px solid var(--border);
+    color: var(--muted); border-radius: 2px;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--bg); padding: 40px 24px;
+    text-align: center; border-top: 1px solid var(--border);
+  }
+  .footer-name {
+    font-family: 'Syne', sans-serif; font-size: 1.1rem;
+    font-weight: 700; color: var(--text);
+  }
+  .footer-role {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    color: var(--muted); letter-spacing: 0.2em;
+    text-transform: uppercase; margin-top: 8px;
+  }
+
+  /* ── ANTHROPIC REPORT SECTION ── */
+  .anthropic-section {
+    background: linear-gradient(135deg, #060e1a 0%, #0a1628 100%);
+    border-top: 1px solid rgba(0,229,255,0.2);
+    border-bottom: 1px solid rgba(0,229,255,0.2);
+    padding: 100px 24px;
+    position: relative; overflow: hidden;
+  }
+  .anthropic-section::before {
+    content: 'ANTHROPIC';
+    position: absolute; right: -20px; top: 40px;
+    font-family: 'Syne', sans-serif; font-size: 9rem;
+    font-weight: 800; color: rgba(0,229,255,0.03);
+    letter-spacing: 0.1em; pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .report-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.25);
+    padding: 8px 18px; border-radius: 3px; margin-bottom: 32px;
+  }
+  .badge-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent1);
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.2; }
+  }
+  .badge-text {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent1);
+  }
+
+  .report-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 2px; margin-top: 48px; max-width: 1000px;
+  }
+
+  .report-stat-card {
+    background: rgba(13,21,32,0.8); padding: 36px 32px;
+    border: 1px solid var(--border);
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.6s, transform 0.6s;
+  }
+  .report-stat-card.visible { opacity: 1; transform: translateY(0); }
+  .report-stat-card:hover { border-color: rgba(0,229,255,0.3); }
+
+  .rs-num {
+    font-family: 'Syne', sans-serif; font-size: 3rem;
+    font-weight: 800; line-height: 1; display: block;
+    background: linear-gradient(135deg, var(--accent1), #0099bb);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .rs-label {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-top: 10px; display: block;
+  }
+  .rs-desc {
+    color: var(--muted); font-size: 0.88rem; line-height: 1.8;
+    margin-top: 14px;
+  }
+
+  .exposure-bar-wrap { margin-top: 48px; max-width: 1000px; }
+  .exposure-title {
+    font-family: 'Syne', sans-serif; font-size: 1.2rem;
+    font-weight: 700; margin-bottom: 8px; color: var(--text);
+  }
+  .exposure-sub {
+    font-size: 0.88rem; color: var(--muted); margin-bottom: 32px;
+    font-style: italic;
+  }
+
+  .exp-row {
+    display: grid; grid-template-columns: 180px 1fr 60px;
+    align-items: center; gap: 16px; margin-bottom: 18px;
+    opacity: 0; transition: opacity 0.5s, transform 0.5s;
+    transform: translateX(-10px);
+  }
+  .exp-row.visible { opacity: 1; transform: translateX(0); }
+
+  .exp-role {
+    font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    text-align: right; color: var(--text); letter-spacing: 0.05em;
+  }
+  .exp-bar-track {
+    height: 28px; background: rgba(255,255,255,0.04);
+    border-radius: 3px; overflow: hidden; position: relative;
+    border: 1px solid var(--border);
+  }
+  .exp-bar-fill {
+    height: 100%; border-radius: 2px; width: 0;
+    transition: width 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+  }
+  .exp-bar-fill::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent 60%, rgba(255,255,255,0.1));
+  }
+  .bar-theoretical { background: linear-gradient(90deg, rgba(0,229,255,0.2), rgba(0,229,255,0.35)); }
+  .bar-observed    { background: linear-gradient(90deg, var(--accent1), #00b8d4); }
+  .exp-pct {
+    font-family: 'DM Mono', monospace; font-size: 0.75rem;
+    color: var(--accent1); font-weight: bold;
+  }
+  .exp-legend {
+    display: flex; gap: 24px; margin-bottom: 20px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'DM Mono', monospace; font-size: 0.62rem;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+  }
+  .legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+
+  .report-finding {
+    background: rgba(0,229,255,0.04); border-left: 3px solid var(--accent1);
+    padding: 24px 28px; margin-top: 48px; max-width: 1000px;
+    border-radius: 0 4px 4px 0;
+  }
+  .finding-label {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent1); margin-bottom: 12px; display: block;
+  }
+  .finding-text {
+    font-size: 1rem; line-height: 1.8; color: var(--text);
+    font-style: italic;
+  }
+  .finding-text strong { color: var(--accent1); font-style: normal; }
+
+  @media (max-width: 600px) {
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+    .timeline::before { left: 20px; }
+    .tl-dot { width: 40px; height: 40px; font-size: 0.55rem; }
+    .skill-tag { font-size: 0.6rem; padding: 6px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<!-- ── HERO ── -->
+<header>
+  <div class="hero-orb orb1"></div>
+  <div class="hero-orb orb2"></div>
+  <p class="eyebrow">Data Analyst × AI Era · 2026 Project</p>
+  <h1>
+    Data Analysts<br>
+    Are Not<br>
+    <span class="strike">Dying</span><br>
+    They're <span class="evolving">Evolving</span>
+  </h1>
+  <p class="hero-sub">
+    As AI reshapes the analytics landscape, the role is shifting from query executor to insight steward — the human layer that machines can't replace.
+  </p>
+  <div class="scroll-cue">
+    <span>Scroll to explore</span>
+    <div class="scroll-line"></div>
+  </div>
+</header>
+
+<!-- ── STAT BAND ── -->
+<div class="stat-band">
+  <div class="stats-row">
+    <div class="stat-item">
+      <span class="stat-num">87%</span>
+      <span class="stat-label">of analysts report increased strategic importance in 2025</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">23%</span>
+      <span class="stat-label">projected job growth in data roles by 2032 (BLS)</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">11.5M</span>
+      <span class="stat-label">new data roles expected by late 2026</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">17%</span>
+      <span class="stat-label">only 17% of analysts deeply fear AI replacing them</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── TIMELINE ── -->
+<section>
+  <div class="container">
+    <span class="section-label">01 — The Transformation Arc</span>
+    <h2>How the Role Has Shifted</h2>
+
+    <div class="timeline">
+
+      <div class="tl-item">
+        <div class="tl-dot" style="color:#6b7fa0; border-color:#6b7fa0;">PRE</div>
+        <div class="tl-content">
+          <p class="tl-year">Before 2022 — The Query Era</p>
+          <p class="tl-title">The Report Generator</p>
+          <p class="tl-desc">Analysts spent hours on manual query writing, data cleaning, and dashboard maintenance. SQL proficiency was the gold standard. The job was largely reactive — answering "what happened?" from static reports.</p>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot" style="color:var(--accent2); border-color:var(--accent2);">NOW</div>
+        <div class="tl-content">
+          <p class="tl-year">2025–2026 — The Augmented Era</p>
+          <p class="tl-title">The AI Orchestrator</p>
+          <p class="tl-desc">AI handles repetitive queries and auto-generates dashboards. Analysts now direct AI tools, validate outputs, catch algorithmic misinterpretations, and translate machine-generated insight into business decisions. SQL is becoming a secondary skill; business fluency is the primary one.</p>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot" style="color:var(--accent1); border-color:var(--accent1);">NEXT</div>
+        <div class="tl-content">
+          <p class="tl-year">2027–2030 — The Strategic Era</p>
+          <p class="tl-title">The Insight Steward</p>
+          <p class="tl-desc">Complete automation of specific analytical functions forces further evolution. Those who master ethical AI auditing, causal inference, and data storytelling will move from analyst to strategic advisor — embedded inside executive decision circles, not behind BI tools.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── QUOTE ── -->
+<div class="quote-section">
+  <blockquote>
+    "AI is not replacing data analysts — it's transforming them into
+    <span>decision enablers.</span> The value now lies in connecting data to human context, not writing clean code."
+  </blockquote>
+  <cite>— Alteryx, State of the Data Analyst 2025 · Survey of 1,400 professionals</cite>
+</div>
+
+<!-- ── SKILLS SHIFT ── -->
+<section>
+  <div class="container">
+    <span class="section-label">02 — Skills in Transition</span>
+    <h2>What's Fading. What's Rising.</h2>
+
+    <div class="skills-wrap">
+
+      <div class="skill-row">
+        <div class="skill-old"><span class="skill-tag old-tag">Writing SQL queries</span></div>
+        <div class="arrow-mid">→</div>
+        <div class="skill-new"><span class="skill-tag new-tag">Validating AI-generated SQL</span></div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-old"><span class="skill-tag old-tag">Manual data cleaning</span></div>
+        <div class="arrow-mid">→</div>
+        <div class="skill-new"><span class="skill-tag new-tag">Auditing AI prep pipelines</span></div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-old"><span class="skill-tag old-tag">Building dashboards</span></div>
+        <div class="arrow-mid">→</div>
+        <div class="skill-new"><span class="skill-tag new-tag">Curating context & assumptions</span></div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-old"><span class="skill-tag old-tag">Descriptive analytics</span></div>
+        <div class="arrow-mid">→</div>
+        <div class="skill-new"><span class="skill-tag new-tag">Predictive & prescriptive insight</span></div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-old"><span class="skill-tag old-tag">Technical execution</span></div>
+        <div class="arrow-mid">→</div>
+        <div class="skill-new"><span class="skill-tag new-tag">Business storytelling</span></div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-old"><span class="skill-tag old-tag">Reporting what happened</span></div>
+        <div class="arrow-mid">→</div>
+        <div class="skill-new"><span class="skill-tag new-tag">Ethical AI governance</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── ROLE CARDS ── -->
+<section style="padding-top: 20px;">
+  <div class="container">
+    <span class="section-label">03 — The Emerging Roles</span>
+    <h2>New Titles Born from AI</h2>
+
+    <div class="cards-grid">
+
+      <div class="role-card card-c1">
+        <span class="card-icon">⚙️</span>
+        <p class="card-title">AI Analytics Specialist</p>
+        <p class="card-body">Blends classic analysis with applied ML to automate data prep, run advanced models, and translate AI-generated predictions into business actions. Mid-to-senior level role with growing demand across every sector.</p>
+        <span class="card-tag tag-cyan">Emerging · Mid–Senior</span>
+      </div>
+
+      <div class="role-card card-c2">
+        <span class="card-icon">🧭</span>
+        <p class="card-title">Insight Steward</p>
+        <p class="card-body">Serves as the crucial link between AI outputs and strategic business decisions. Brings institutional knowledge and business fluency to transform technically correct but contextually wrong AI answers into useful recommendations.</p>
+        <span class="card-tag tag-orange">Core Evolution · All Levels</span>
+      </div>
+
+      <div class="role-card card-c3">
+        <span class="card-icon">🔍</span>
+        <p class="card-title">AI Trust Lead / Ethics Auditor</p>
+        <p class="card-body">Ensures algorithms don't introduce bias, exclude vulnerable groups, or contradict regulations. As companies rely on machine-generated insights, someone must own accuracy, interpretability, and ethical alignment. That role is the evolved analyst.</p>
+        <span class="card-tag tag-green">High Demand · Senior</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── ANTHROPIC REPORT SECTION ── -->
+<div class="anthropic-section">
+  <div class="container">
+
+    <div class="report-badge">
+      <div class="badge-dot"></div>
+      <span class="badge-text">Primary Source · Published March 5, 2026</span>
+    </div>
+
+    <span class="section-label">04 — The Anthropic Report</span>
+    <h2>What Anthropic's Own Research Found</h2>
+    <p style="color:var(--muted); line-height:1.9; max-width:680px; font-size:0.95rem; margin-top:-16px;">
+      In March 2026, Anthropic economists Maxim Massenkoff &amp; Peter McCrory published the first large-scale study measuring AI's <em>actual</em> impact on U.S. labor markets — using Claude's own usage logs as data.
+    </p>
+
+    <div class="report-grid">
+      <div class="report-stat-card">
+        <span class="rs-num">94%</span>
+        <span class="rs-label">Theoretical Task Coverage</span>
+        <p class="rs-desc">For Computer &amp; Math workers, LLMs can theoretically cover 94% of tasks — yet Claude currently handles only 33% of those tasks in real professional use today.</p>
+      </div>
+      <div class="report-stat-card">
+        <span class="rs-num">75%</span>
+        <span class="rs-label">Top Exposed Role: Programmers</span>
+        <p class="rs-desc">Computer Programmers top the AI exposure list at 75% observed task coverage — followed by Customer Service Reps and Data Entry Keyers at 67%.</p>
+      </div>
+      <div class="report-stat-card">
+        <span class="rs-num">30%</span>
+        <span class="rs-label">Occupations With Zero Exposure</span>
+        <p class="rs-desc">Roughly 30% of jobs show no AI exposure at all — cooks, lifeguards, bartenders — roles requiring physical presence that no LLM can replicate.</p>
+      </div>
+      <div class="report-stat-card">
+        <span class="rs-num">≈ 0</span>
+        <span class="rs-label">Unemployment Effect (So Far)</span>
+        <p class="rs-desc">Workers in "most exposed" jobs have not become unemployed at measurably higher rates — but hiring of workers aged 22–25 has visibly slowed in exposed occupations.</p>
+      </div>
+    </div>
+
+    <div class="exposure-bar-wrap" style="margin-top:56px;">
+      <p class="exposure-title">The Capability Gap — Theoretical vs. Observed AI Coverage</p>
+      <p class="exposure-sub">The gap between what AI <em>could</em> do vs. what it <em>actually does</em> today in real workplaces — and it's closing.</p>
+
+      <div class="exp-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(0,229,255,0.3)"></div>Theoretical capacity</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent1)"></div>Observed usage today</div>
+      </div>
+
+      <div class="exp-row" data-theoretical="94" data-observed="33">
+        <span class="exp-role">Computer &amp; Math</span>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div class="exp-bar-track"><div class="exp-bar-fill bar-theoretical"></div></div>
+          <div class="exp-bar-track"><div class="exp-bar-fill bar-observed"></div></div>
+        </div>
+        <span class="exp-pct">94% → 33%</span>
+      </div>
+
+      <div class="exp-row" data-theoretical="90" data-observed="28">
+        <span class="exp-role">Office &amp; Admin</span>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div class="exp-bar-track"><div class="exp-bar-fill bar-theoretical"></div></div>
+          <div class="exp-bar-track"><div class="exp-bar-fill bar-observed"></div></div>
+        </div>
+        <span class="exp-pct">90% → 28%</span>
+      </div>
+
+      <div class="exp-row" data-theoretical="75" data-observed="40">
+        <span class="exp-role">Data Analyst</span>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div class="exp-bar-track"><div class="exp-bar-fill bar-theoretical"></div></div>
+          <div class="exp-bar-track"><div class="exp-bar-fill bar-observed"></div></div>
+        </div>
+        <span class="exp-pct">75% → 40%</span>
+      </div>
+
+      <div class="exp-row" data-theoretical="60" data-observed="18">
+        <span class="exp-role">Business &amp; Finance</span>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div class="exp-bar-track"><div class="exp-bar-fill bar-theoretical"></div></div>
+          <div class="exp-bar-track"><div class="exp-bar-fill bar-observed"></div></div>
+        </div>
+        <span class="exp-pct">60% → 18%</span>
+      </div>
+
+      <div class="exp-row" data-theoretical="8" data-observed="2">
+        <span class="exp-role">Physical / Trades</span>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div class="exp-bar-track"><div class="exp-bar-fill bar-theoretical"></div></div>
+          <div class="exp-bar-track"><div class="exp-bar-fill bar-observed"></div></div>
+        </div>
+        <span class="exp-pct">8% → 2%</span>
+      </div>
+    </div>
+
+    <div class="report-finding">
+      <span class="finding-label">🔑 Key Finding for Data Analysts</span>
+      <p class="finding-text">
+        Anthropic's research reveals the most AI-exposed workers are <strong>more educated, higher-paid, and more likely to be female</strong> — this wave is hitting knowledge workers first. For data analysts, the gap between theoretical and observed AI coverage <strong>is the window of opportunity</strong>. The role isn't automated — it's being redefined while most workplaces are still catching up.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── WHY ANALYSTS STAY ESSENTIAL ── -->
+<section style="background: var(--surface); margin: 0; padding: 80px 24px;">
+  <div class="container">
+    <span class="section-label">05 — The Human Edge</span>
+    <h2>What Machines Still Can't Do</h2>
+    <p style="color:var(--muted); line-height:1.9; max-width:680px; font-size:0.98rem;">
+      When a CEO asks about "customer retention," an AI system might generate a technically accurate answer that completely misses the point. Does retention mean contract renewals? Active usage? Recent payment activity? The data analyst brings the institutional knowledge and business fluency to transform raw outputs into useful, meaningful insights — that's a human skill, not a query.
+    </p>
+    <br>
+    <p style="color:var(--muted); line-height:1.9; max-width:680px; font-size:0.98rem;">
+      Critical thinking, ethical reasoning, stakeholder communication, and the ability to formulate the <em>right</em> business question to guide AI exploration — none of these can be automated. They are the new core competencies of the data analyst in the AI era.
+    </p>
+  </div>
+</section>
+
+<!-- ── SOURCES ── -->
+<div class="sources">
+  <div class="container">
+    <h3>Sources & Research</h3>
+    <div class="source-list">
+      <span class="source-pill" style="border-color:rgba(0,229,255,0.3);color:var(--accent1);">★ Anthropic — Labor Market Impacts of AI · March 2026</span>
+      <span class="source-pill">Alteryx — State of the Data Analyst 2025</span>
+      <span class="source-pill">Harvard FAS Career Center · 2025</span>
+      <span class="source-pill">InfoWorld — How AI Changes the Data Analyst Role · 2025</span>
+      <span class="source-pill">U.S. Bureau of Labor Statistics</span>
+      <span class="source-pill">UMass Lowell Career Center · 2025</span>
+      <span class="source-pill">Exponent Blog — Data Analyst AI Skills</span>
+      <span class="source-pill">Skillifysolutions — Data Analyst Job Outlook 2026</span>
+      <span class="source-pill">AdaptiveUS — Senior Data Analyst Jobs 2026</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <p class="footer-name">Data Analyst Project · 2026</p>
+  <p class="footer-role">The Evolution of Analytics in the Age of AI</p>
+</footer>
+
+<script>
+  // Intersection observer for scroll animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 120);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.tl-item, .skill-row').forEach(el => observer.observe(el));
+
+  // Animate stat numbers
+  function animateCount(el, target, suffix = '') {
+    let start = 0;
+    const duration = 1800;
+    const step = (timestamp) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(eased * target);
+      el.textContent = current + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+      else el.textContent = target + suffix;
+    };
+    requestAnimationFrame(step);
+  }
+
+  const statObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const nums = entry.target.querySelectorAll('.stat-num');
+        nums[0] && animateCount(nums[0], 87, '%');
+        nums[1] && animateCount(nums[1], 23, '%');
+        nums[2] && animateCount(nums[2], 11, '.5M');
+        nums[3] && animateCount(nums[3], 17, '%');
+        statObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  // Exposure bar animations
+  const barObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const row = entry.target;
+        const theoretical = parseFloat(row.dataset.theoretical);
+        const observed = parseFloat(row.dataset.observed);
+        const fills = row.querySelectorAll('.exp-bar-fill');
+        setTimeout(() => {
+          if (fills[0]) fills[0].style.width = theoretical + '%';
+          if (fills[1]) fills[1].style.width = observed + '%';
+        }, 100);
+        row.classList.add('visible');
+        barObserver.unobserve(row);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('.exp-row').forEach(el => barObserver.observe(el));
+
+  // Report stat cards observer
+  const cardObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 150);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  document.querySelectorAll('.report-stat-card').forEach(el => cardObserver.observe(el));
+</script>
+</body>
+</html>
